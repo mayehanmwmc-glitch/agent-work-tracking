@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>保险客户管理系统</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background: #f5f7fa;
+            color: #333;
+        }
+        .header {
+            background: #2f54eb;
+            padding: 0 15px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .header h1 {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .nav-item {
+            padding: 0 12px;
+            height: 60px;
+            line-height: 60px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .nav-item.active {
+            background: #1d39c4;
+        }
+        .nav-item:hover {
+            background: #1d39c4;
+        }
+        .container {
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .func-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            width: 100%;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 9px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            outline: none;
+        }
+        .operate-btn {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .btn {
+            padding: 9px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .btn-primary {
+            background: #2f54eb;
+            color: #fff;
+        }
+        .btn-default {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            color: #666;
+        }
+        .table-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            position: sticky;
+            top: 60px;
+        }
+        tr:hover {
+            background: #f9fafb;
+        }
+        tr.warning {
+            background: #fff7e6 !important;
+            border-left: 3px solid #ff7d00;
+        }
+        tr.expired {
+            background: #fff1f0 !important;
+            border-left: 3px solid #f53f3f;
+        }
+        .operate a {
+            color: #2f54eb;
+            text-decoration: none;
+            margin-right: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .operate a.sign {
+            color: #00b42a;
+            font-weight: 600;
+        }
+        .stat-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .stat-card .title {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .stat-card .num {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2f54eb;
+        }
+        .chart-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        .chart-box {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            height: 320px;
+        }
+        .rule-container {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            line-height: 1.7;
+        }
+        .rule-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2f54eb;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f5f7fa;
+        }
+        .sub-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 12px 0 8px;
+            color: #1d39c4;
+        }
+        .rule-list {
+            padding-left: 18px;
+            margin-bottom: 12px;
+        }
+        .rule-list li {
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .highlight {
+            color: #e53935;
+            font-weight: 600;
+        }
+        .module {
+            display: none;
+        }
+        .module.active {
+            display: block;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            background: #ff7d00;
+            color: #fff;
+            margin-left: 4px;
+        }
+        .badge.expired {
+            background: #f53f3f;
+        }
+        @media (min-width: 768px) {
+            .func-bar {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            .search-box {
+                width: auto;
+            }
+            .stat-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .chart-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .header h1 {
+                font-size: 22px;
+            }
+            .nav-item {
+                font-size: 16px;
+                padding: 0 20px;
+            }
+        }
+        .modal-input {
+            width: 100%;
+            padding: 9px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            outline: none;
+        }
+        .modal-input:focus {
+            border-color: #2f54eb;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1><i class="fa-solid fa-user-tie"></i> 保险客户管理系统</h1>
+    <div class="nav">
+        <div class="nav-item active" data-target="new-prospect">新潜在客户</div>
+        <div class="nav-item" data-target="existing-client">现有客户</div>
+        <div class="nav-item" data-target="data-stat">数据统计</div>
+        <div class="nav-item" data-target="contact-rule">定联规则</div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 新潜在客户 -->
+    <div class="module active" id="new-prospect">
+        <div class="func-bar">
+            <div class="search-box">
+                <input type="text" id="searchProspect" placeholder="搜索姓名/联系方式/地域...">
+                <button class="btn btn-primary" id="searchProspectBtn"><i class="fa-solid fa-magnifying-glass"></i> 搜索</button>
+            </div>
+            <div class="operate-btn">
+                <button class="btn btn-primary" id="addProspect"><i class="fa-solid fa-plus"></i> 新增客户</button>
+                <button class="btn btn-default"><i class="fa-solid fa-download"></i> 导出Excel</button>
+                <button class="btn btn-default"><i class="fa-solid fa-trash"></i> 批量删除</button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>姓名</th>
+                        <th>年龄</th>
+                        <th>地域</th>
+                        <th>职业/年收入</th>
+                        <th>婚姻</th>
+                        <th>赡养</th>
+                        <th>NOC/年保费</th>
+                        <th>ABCD分级</th>
+                        <th>定联提醒</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="prospectTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 现有客户 -->
+    <div class="module" id="existing-client">
+        <div class="func-bar">
+            <div class="search-box">
+                <input type="text" id="searchClient" placeholder="搜索姓名/NRIC/生日...">
+                <button class="btn btn-primary" id="searchClientBtn"><i class="fa-solid fa-magnifying-glass"></i> 搜索</button>
+            </div>
+            <div class="operate-btn">
+                <button class="btn btn-primary" id="addClient"><i class="fa-solid fa-plus"></i> 新增客户</button>
+                <button class="btn btn-default"><i class="fa-solid fa-download"></i> 导出Excel</button>
+                <button class="btn btn-default"><i class="fa-solid fa-trash"></i> 批量删除</button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>姓名</th>
+                        <th>NRIC</th>
+                        <th>生日/年龄</th>
+                        <th>地域</th>
+                        <th>职业/年收入</th>
+                        <th>婚姻</th>
+                        <th>赡养</th>
+                        <th>Life/CI/NOC</th>
+                        <th>年保费/ABCD</th>
+                        <th>定联提醒</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="clientTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 数据统计 -->
+    <div class="module" id="data-stat">
+        <div class="stat-container">
+            <div class="stat-card"><div class="title">总潜在客户</div><div class="num" id="statProspect">0</div></div>
+            <div class="stat-card"><div class="title">总现有客户</div><div class="num" id="statClient">0</div></div>
+            <div class="stat-card"><div class="title">A级客户占比</div><div class="num" id="statA">0%</div></div>
+            <div class="stat-card"><div class="title">待定联客户</div><div class="num" id="statContact">0</div></div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-box" id="chart-abcd"></div>
+            <div class="chart-box" id="chart-noc"></div>
+            <div class="chart-box" id="chart-premium"></div>
+            <div class="chart-box" id="chart-location"></div>
+        </div>
+    </div>
+
+    <!-- 定联规则 -->
+    <div class="module" id="contact-rule">
+        <div class="rule-container">
+            <div class="rule-title">定联管理规则（行销+增员）</div>
+            <div class="sub-title">一、ABCD客户分级标准</div>
+            <ul class="rule-list">
+                <li><span class="highlight">A 挺你到底</span>：10-30P，高信任度，可直接促成、送建议书</li>
+                <li><span class="highlight">B 全熟，可谈心事</span>：50-100P，建立信任等待时机，走行销流程</li>
+                <li><span class="highlight">C 三分熟</span>：100-150P，以前的朋友/同事，多聊天、聊深度</li>
+                <li><span class="highlight">D 认识/生意伙伴</span>：150-200P，仅存联系方式，多问候、聊兴趣</li>
+            </ul>
+            <div class="sub-title">二、行销定联核心要求</div>
+            <ul class="rule-list">
+                <li>定联目的：经营关系（陌生→亲近）→产生信任→成为客户/A级</li>
+                <li>定联频率：ABCD分级对应1/3/6/8周，每日定联6-8P</li>
+                <li>定联内容：CD级只经营关系不谈保险；B级走流程；A级直接促成</li>
+                <li>成交核心：20%专业+20%技巧+60%信任</li>
+            </ul>
+            <div class="sub-title">三、分级转化方法</div>
+            <ul class="rule-list">
+                <li>D转C：增加问候+兴趣聊天</li>
+                <li>C转B：聊心事+深度连接</li>
+                <li>B转A：持续经营+把握时机</li>
+                <li>降级规则：无下文归D、约访不成降C</li>
+            </ul>
+            <div class="sub-title">四、增员定联要求</div>
+            <ul class="rule-list">
+                <li>定联频率：8/10周，每周10R</li>
+                <li>内容：问候→聊工作</li>
+                <li>重点：喜欢行业、能到办公室的人群</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- 弹窗 -->
+<div class="modal" id="customerModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:999;">
+    <div style="background:#fff;width:95%;max-width:700px;padding:20px;border-radius:12px;max-height:90vh;overflow-y:auto;">
+        <h3 style="margin-bottom:18px;color:#2f54eb;" id="modalTitle">新增客户</h3>
+        <form id="customerForm">
+            <input type="hidden" id="editId">
+            <input type="hidden" id="type" value="prospect">
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">姓名</label><input type="text" id="name" required class="modal-input"></div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">年龄</label><input type="text" id="age" class="modal-input"></div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">地域</label><input type="text" id="location" class="modal-input"></div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">职业</label><input type="text" id="job" class="modal-input"></div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">年收入</label><input type="text" id="income" class="modal-input"></div>
+
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">NRIC</label><input type="text" id="nric" class="modal-input" placeholder="970115-12-3456"></div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">生日</label><input type="text" id="birthday" class="modal-input" readonly placeholder="自动生成"></div>
+                
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">婚姻</label>
+                    <select id="marry" class="modal-input">
+                        <option value="">请选择</option>
+                        <option value="Single">Single</option>
+                        <option value="Married">Married</option>
+                        <option value="Divorced">Divorced</option>
+                        <option value="Widowed">Widowed</option>
+                    </select>
+                </div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">赡养</label><input type="text" id="support" class="modal-input" placeholder="子女/父母"></div>
+
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">NOC</label><input type="text" id="noc" class="modal-input"></div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">年保费</label><input type="text" id="premium" class="modal-input"></div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">ABCD分级</label><input type="text" id="level" class="modal-input"></div>
+                
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">定联周期</label>
+                    <select id="contactCycle" class="modal-input">
+                        <option value="">不提醒</option>
+                        <option value="7">1星期</option>
+                        <option value="21">3星期</option>
+                        <option value="42">6星期</option>
+                        <option value="56">8星期</option>
+                        <option value="custom">自定义天数</option>
+                    </select>
+                </div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">自定义天数</label><input type="number" id="customDays" class="modal-input" placeholder="填写数字"></div>
+
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">上次定联</label><input type="date" id="lastContact" class="modal-input"></div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">Life</label><input type="text" id="life" class="modal-input"></div>
+                <div><label style="font-size:13px;margin-bottom:4px;display:block;">CI</label><input type="text" id="ci" class="modal-input"></div>
+                <div style="grid-column: span 2;"><label style="font-size:13px;margin-bottom:4px;display:block;">定联计划</label><input type="text" id="plan" class="modal-input"></div>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <button type="button" class="btn btn-default" id="closeModal">取消</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let prospectList = [];
+let clientList = [];
+let id = 1;
+
+// 导航
+$('.nav-item').click(function(){
+    $(this).addClass('active').siblings().removeClass('active');
+    $('.module').removeClass('active');
+    $('#'+$(this).data('target')).addClass('active');
+    updateStat();
+    renderCharts();
+});
+
+// 新增
+$('#addProspect').click(function(){
+    $('#type').val('prospect');
+    $('#modalTitle').text('新增潜在客户');
+    $('#customerForm')[0].reset();
+    $('#editId').val('');
+    $('#customerModal').css('display','flex');
+});
+$('#addClient').click(function(){
+    $('#type').val('client');
+    $('#modalTitle').text('新增现有客户');
+    $('#customerForm')[0].reset();
+    $('#editId').val('');
+    $('#customerModal').css('display','flex');
+});
+
+// 关闭弹窗
+$('#closeModal').click(function(){
+    $('#customerModal').hide();
+});
+
+// NRIC 自动生日
+$('#nric').on('input', function(){
+    let val = $(this).val().replace(/-/g, '');
+    if(val.length >= 6){
+        let y = val.substring(0,2);
+        let m = val.substring(2,4);
+        let d = val.substring(4,6);
+        let year = (parseInt(y) > 24) ? '19'+y : '20'+y;
+        $('#birthday').val(year + '-' + m + '-' + d);
+    } else $('#birthday').val('');
+});
+
+// 保存
+$('#customerForm').submit(function(e){
+    e.preventDefault();
+    const type = $('#type').val();
+    const cycle = $('#contactCycle').val();
+    const days = cycle === 'custom' ? $('#customDays').val() : cycle;
+    
+    const data = {
+        id: $('#editId').val() || id++,
+        name: $('#name').val(), age: $('#age').val(), location: $('#location').val(),
+        job: $('#job').val(), income: $('#income').val(), marry: $('#marry').val(),
+        support: $('#support').val(), noc: $('#noc').val(), premium: $('#premium').val(),
+        level: $('#level').val(), nric: $('#nric').val(), birthday: $('#birthday').val(),
+        life: $('#life').val(), ci: $('#ci').val(), plan: $('#plan').val(),
+        contactCycle: days, lastContact: $('#lastContact').val()
+    };
+
+    if(type === 'prospect'){
+        if($('#editId').val()) prospectList = prospectList.map(x=>x.id==data.id?data:x);
+        else prospectList.push(data);
+        renderProspect();
+    }else{
+        if($('#editId').val()) clientList = clientList.map(x=>x.id==data.id?data:x);
+        else clientList.push(data);
+        renderClient();
+    }
+    updateStat();
+    $('#customerModal').hide();
+});
+
+// 渲染列表
+function renderProspect(){
+    let html = '';
+    prospectList.forEach(item=>{
+        const s = getContactStatus(item);
+        html += `<tr class="${s.class}">
+            <td>${item.id}</td><td>${item.name}</td><td>${item.age}</td><td>${item.location}</td>
+            <td>${item.job}/${item.income}</td><td>${item.marry}</td><td>${item.support}</td>
+            <td>${item.noc}/${item.premium}</td><td>${item.level}</td>
+            <td>${s.text} ${s.badge}</td>
+            <td class="operate">
+                <a class="edit-prospect" data-id="${item.id}">编辑</a>
+                <a class="sign-prospect" data-id="${item.id}">✅ 签单转入</a>
+                <a class="del-prospect" data-id="${item.id}">删除</a>
+            </td>
+        </tr>`;
+    });
+    $('#prospectTable').html(html);
+}
+
+function renderClient(){
+    let html = '';
+    clientList.forEach(item=>{
+        const s = getContactStatus(item);
+        html += `<tr class="${s.class}">
+            <td>${item.id}</td><td>${item.name}</td><td>${item.nric}</td><td>${item.birthday}/${item.age}</td>
+            <td>${item.location}</td><td>${item.job}/${item.income}</td><td>${item.marry}</td><td>${item.support}</td>
+            <td>${item.life}/${item.ci}/${item.noc}</td><td>${item.premium}/${item.level}</td>
+            <td>${s.text} ${s.badge}</td>
+            <td class="operate">
+                <a class="edit-client" data-id="${item.id}">编辑</a>
+                <a class="del-client" data-id="${item.id}">删除</a>
+            </td>
+        </tr>`;
+    });
+    $('#clientTable').html(html);
+}
+
+// 定联提醒
+function getContactStatus(item){
+    if(!item.contactCycle || !item.lastContact) return {text:'-', badge:'', class:''};
+    const last = new Date(item.lastContact);
+    const now = new Date();
+    const diff = Math.floor((now - last) / 86400000);
+    const cycle = parseInt(item.contactCycle);
+    if(diff >= cycle) return {text:'已到期', badge:'<span class="badge expired">逾期</span>', class:'expired'};
+    if(cycle - diff <= 3) return {text:'即将到期', badge:'<span class="badge">提醒</span>', class:'warning'};
+    return {text:'正常', badge:'', class:''};
+}
+
+// 签单转入
+$(document).on('click','.sign-prospect',function(){
+    const id = $(this).data('id');
+    const data = prospectList.find(x=>x.id==id);
+    if(confirm('确定签单？将转入现有客户！')){
+        clientList.push(data);
+        prospectList = prospectList.filter(x=>x.id!=id);
+        renderProspect(); renderClient(); updateStat();
+    }
+});
+
+// 编辑
+$(document).on('click','.edit-prospect',function(){
+    const d = prospectList.find(x=>x.id==$(this).data('id'));
+    fillForm(d); $('#type').val('prospect'); $('#modalTitle').text('编辑潜在客户');
+    $('#customerModal').css('display','flex');
+});
+$(document).on('click','.edit-client',function(){
+    const d = clientList.find(x=>x.id==$(this).data('id'));
+    fillForm(d); $('#type').val('client'); $('#modalTitle').text('编辑现有客户');
+    $('#customerModal').css('display','flex');
+});
+
+function fillForm(d){
+    $('#editId').val(d.id); $('#name').val(d.name); $('#age').val(d.age);
+    $('#location').val(d.location); $('#job').val(d.job); $('#income').val(d.income);
+    $('#marry').val(d.marry); $('#support').val(d.support); $('#noc').val(d.noc);
+    $('#premium').val(d.premium); $('#level').val(d.level); $('#nric').val(d.nric);
+    $('#birthday').val(d.birthday); $('#life').val(d.life); $('#ci').val(d.ci);
+    $('#plan').val(d.plan); $('#contactCycle').val(d.contactCycle);
+    $('#customDays').val(d.contactCycle); $('#lastContact').val(d.lastContact);
+}
+
+// 删除
+$(document).on('click','.del-prospect',function(){
+    if(confirm('确定删除？')){
+        prospectList = prospectList.filter(x=>x.id!=$(this).data('id'));
+        renderProspect(); updateStat();
+    }
+});
+$(document).on('click','.del-client',function(){
+    if(confirm('确定删除？')){
+        clientList = clientList.filter(x=>x.id!=$(this).data('id'));
+        renderClient(); updateStat();
+    }
+});
+
+// 搜索
+$('#searchProspectBtn').click(function(){
+    const k = $('#searchProspect').val().toLowerCase();
+    const list = prospectList.filter(x=>x.name.toLowerCase().includes(k)||x.location.toLowerCase().includes(k));
+    $('#prospectTable').html(list.map(i=>`<tr>
+        <td>${i.id}</td><td>${i.name}</td><td>${i.age}</td><td>${i.location}</td>
+        <td>${i.job}/${i.income}</td><td>${i.marry}</td><td>${i.support}</td>
+        <td>${i.noc}/${i.premium}</td><td>${i.level}</td><td>-</td>
+        <td class="operate">
+            <a class="edit-prospect" data-id="${i.id}">编辑</a>
+            <a class="sign-prospect" data-id="${i.id}">✅ 签单转入</a>
+            <a class="del-prospect" data-id="${i.id}">删除</a>
+        </td>
+    </tr>`).join(''));
+});
+
+// 统计
+function updateStat(){
+    $('#statProspect').text(prospectList.length);
+    $('#statClient').text(clientList.length);
+    const all = [...prospectList,...clientList];
+    const a = all.filter(x=>x.level?.toUpperCase()=='A').length;
+    $('#statA').text(all.length?Math.round(a/all.length*100)+'%':'0%');
+    const c = all.filter(x=>getContactStatus(x).class!='').length;
+    $('#statContact').text(c);
+}
+
+// 图表
+function renderCharts(){
+    const all = [...prospectList,...clientList];
+    const abcd={A:0,B:0,C:0,D:0};
+    all.forEach(x=>{if(x.level)abcd[x.level.toUpperCase()]++});
+    const chart = echarts.init(document.getElementById('chart-abcd'));
+    chart.setOption({title:{text:'客户ABCD分级'},series:[{type:'pie',data:[
+        {name:'A级',value:abcd.A},{name:'B级',value:abcd.B},
+        {name:'C级',value:abcd.C},{name:'D级',value:abcd.D}
+    ]}]});
+}
+
+// 初始化
+renderProspect(); renderClient(); updateStat(); renderCharts();
+</script>
+</body>
+</html>
